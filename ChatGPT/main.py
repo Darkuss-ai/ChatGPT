@@ -6,6 +6,10 @@ import os
 import pyttsx3
 import wave
 import json
+from ctypes import *
+
+libc = CDLL(r"C:\Windows\System32\Speech\Common\sapi.dll")
+
 
 openai.api_key = "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"
 bot = telebot.TeleBot("5666710242:AAEBrobhlyDMS08PWepQVZS4h0NpSD-UVzE")
@@ -109,6 +113,7 @@ def handle_message(message):
     chat_id = 0
     user_text = message
     send_message_with_context(chat_id, user_text)
+
 
 ttsEngine = pyttsx3.init()
 voices = ttsEngine.getProperty("voices")
