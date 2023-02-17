@@ -7,6 +7,8 @@ import os
 import torch
 import winsound
 from googletrans import Translator
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from gpt2_client import GPT2Client
 
 openai.api_key = "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"
 
@@ -105,6 +107,27 @@ def update_user_context(chat_id, new_text):
 
 def send_message_with_context(chat_id, message):
     context = get_user_context(chat_id)
+    # if assistant.recognition_language == 'ru':
+    #     model_name = "sberbank-ai/rugpt3large_based_on_gpt2"
+    #     tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+    #     using_model = GPT2LMHeadModel.from_pretrained(model_name)
+    #     text = message
+    #     input_ids = tokenizer.encode(text, return_tensors='pt')
+    #     out = using_model.generate(input_ids)
+    #     generated_text = list(map(tokenizer.decode, out))[0]
+    #     play_voice_assistant_speech(generated_text)
+    #     update_user_context(chat_id, generated_text)
+    #     print(generated_text)
+    # else:
+    #     gpt2 = GPT2Client("1558M")
+    #     gpt2.load_model(force_download=False)
+    #     gpt2.generate(interactive=True)  # Asks user for prompt
+    #     gpt2.generate(n_samples=4)  # Generates 4 pieces of text
+    #     text = gpt2.generate(return_text=True)  # Generates text and returns it in an array
+    #     gpt2.generate(interactive=True, n_samples=3)  # A different prompt each time
+    #     play_voice_assistant_speech(text)
+    #     update_user_context(chat_id, message)
+    #     print(text)
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=f"{context}{message}",
@@ -125,7 +148,7 @@ def handle_message(message):
     send_message_with_context(chat_id, user_text)
 
 
-assistant = VoiceAssistant('Andrey', 'female', 'ru', 'ru')
+assistant = VoiceAssistant('Alice', 'female', 'ru', 'ru')
 device = torch.device('cpu')
 torch.set_num_threads(4)
 local_file = 'modelRU.pt' if assistant.speech_language == 'ru' else 'modelEU.pt'
