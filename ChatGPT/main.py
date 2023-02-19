@@ -7,10 +7,8 @@ import os
 import torch
 import winsound
 from googletrans import Translator
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
-from gpt2_client import GPT2Client
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 class VoiceAssistant:
@@ -49,7 +47,7 @@ def play_voice_assistant_speech(text_to_speech):
                 text_to_speech = "Извини, я не очень тебя понял. Можешь повторить?"
             else:
                 text_to_speech = "Sorry, i don't understand you. Can you repeat what did you say?"
-    model.save_wav(text=text_to_speech, speaker=assistant.speaker, sample_rate=sample_rate)
+    model_voice.save_wav(text=text_to_speech, speaker=assistant.speaker, sample_rate=sample_rate)
 
     winsound.PlaySound('test.wav', winsound.SND_FILENAME)
 
@@ -108,26 +106,12 @@ def update_user_context(chat_id, new_text):
 def send_message_with_context(chat_id, message):
     context = get_user_context(chat_id)
     # if assistant.recognition_language == 'ru':
-    #     model_name = "sberbank-ai/rugpt3large_based_on_gpt2"
-    #     tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-    #     using_model = GPT2LMHeadModel.from_pretrained(model_name)
-    #     text = message
-    #     input_ids = tokenizer.encode(text, return_tensors='pt')
-    #     out = using_model.generate(input_ids)
-    #     generated_text = list(map(tokenizer.decode, out))[0]
-    #     play_voice_assistant_speech(generated_text)
-    #     update_user_context(chat_id, generated_text)
-    #     print(generated_text)
+    #
+    #     generated = generate_RU(model_chat, token, message, num_beams=10)
+    #     print(generated[0])
+    #     play_voice_assistant_speech(generated[0])
+
     # else:
-    #     gpt2 = GPT2Client("1558M")
-    #     gpt2.load_model(force_download=False)
-    #     gpt2.generate(interactive=True)  # Asks user for prompt
-    #     gpt2.generate(n_samples=4)  # Generates 4 pieces of text
-    #     text = gpt2.generate(return_text=True)  # Generates text and returns it in an array
-    #     gpt2.generate(interactive=True, n_samples=3)  # A different prompt each time
-    #     play_voice_assistant_speech(text)
-    #     update_user_context(chat_id, message)
-    #     print(text)
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=f"{context}{message}",
@@ -138,7 +122,7 @@ def send_message_with_context(chat_id, message):
         presence_penalty=0.0
     )
     play_voice_assistant_speech(response['choices'][0]['text'])
-    update_user_context(chat_id, message)
+    #update_user_context(chat_id, message)
     print(response['choices'][0]['text'])
 
 
@@ -150,7 +134,7 @@ def handle_message(message):
 
 assistant = VoiceAssistant('Alice', 'female', 'ru', 'ru')
 device = torch.device('cpu')
-torch.set_num_threads(4)
+torch.set_num_threads(2)
 local_file = 'modelRU.pt' if assistant.speech_language == 'ru' else 'modelEU.pt'
 
 if not os.path.isfile(local_file):
@@ -163,8 +147,8 @@ if not os.path.isfile(local_file):
 if assistant.speech_language != assistant.recognition_language:
     translator = Translator()
 print(local_file)
-model = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
-model.to(device)
+model_voice = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
+model_voice.to(device)
 sample_rate = 48000
 
 recognizer = speech_recognition.Recognizer()
@@ -172,8 +156,8 @@ microphone = speech_recognition.Microphone()
 
 user_context = {0: ""}
 
-while True:
-    voice_input = record_and_recognize_audio("Привет. Я хочу сломать тебе руку.")
+for i in range(10):
+    voice_input = record_and_recognize_audio(input())
     # os.remove("test.wav")
     print(voice_input)
     handle_message(voice_input)
